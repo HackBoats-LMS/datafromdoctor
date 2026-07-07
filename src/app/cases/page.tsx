@@ -67,6 +67,14 @@ export default function CasesPage() {
         </div>
 
         <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
+          <a
+            href="/api/cases/export"
+            download
+            className="btn btn-secondary"
+            style={{ height: "40px", display: "inline-flex", alignItems: "center", padding: "0 1rem", fontSize: "0.9rem", marginTop: 0 }}
+          >
+             Export Data
+          </a>
           <label className="form-label" style={{ margin: 0, whiteSpace: "nowrap" }}>Status Filter:</label>
           <select
             value={statusFilter}
