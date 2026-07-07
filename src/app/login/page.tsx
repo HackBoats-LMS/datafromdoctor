@@ -38,8 +38,7 @@ export default function LoginPage() {
       }
 
       setMessage({ type: "success", text: "Logged in successfully!" });
-      router.refresh();
-      router.push("/");
+      window.location.href = "/";
     } catch (err: any) {
       setMessage({ type: "error", text: err.message });
     } finally {
