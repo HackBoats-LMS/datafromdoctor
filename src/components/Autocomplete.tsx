@@ -86,7 +86,7 @@ export default function Autocomplete({
 
     debounceTimer.current = setTimeout(() => {
       fetchSuggestions(val);
-    }, 300);
+    }, 100);
   };
 
   const selectSuggestion = (suggestion: string) => {

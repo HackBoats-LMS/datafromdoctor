@@ -38,9 +38,8 @@ export async function GET(req: Request) {
     // Prefix match anchored at the start: ^query
     const regex = new RegExp(`^${escapedQuery}`, "i");
 
-    // Only query approved entries
+    // Query matching entries
     const results = await model.find({
-      status: "approved",
       value: { $regex: regex }
     })
     .limit(10)
