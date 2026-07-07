@@ -4,6 +4,11 @@ import React, { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Autocomplete from "@/components/Autocomplete";
 
+interface Recommendation {
+  tablet: string;
+  confidence: number;
+}
+
 function CaseFormContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -17,6 +22,7 @@ function CaseFormContent() {
   const [currentMedications, setCurrentMedications] = useState<string[]>([]);
   const [suggestedTablet, setSuggestedTablet] = useState("");
   const [dosageNotes, setDosageNotes] = useState("");
+  const [recommendations, setRecommendations] = useState<Recommendation[]>([]);
 
   const [loading, setLoading] = useState(false);
   const [fetching, setFetching] = useState(false);
@@ -57,6 +63,33 @@ function CaseFormContent() {
 
     loadCase();
   }, [editId]);
+
+  // Load real-time recommendations (debounced)
+  useEffect(() => {
+    const activeSymptoms = symptoms.map(s => s.trim()).filter(s => s !== "");
+    if (activeSymptoms.length === 0) {
+      setRecommendations([]);
+      return;
+    }
+
+    const timer = setTimeout(async () => {
+      try {
+        const res = await fetch("/api/cases/recommend", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ symptom: activeSymptoms, healthIssues }),
+        });
+        if (res.ok) {
+          const data = await res.json();
+          setRecommendations(data.recommendations || []);
+        }
+      } catch (err) {
+        console.error("Failed to load tablet recommendations:", err);
+      }
+    }, 400);
+
+    return () => clearTimeout(timer);
+  }, [symptoms, healthIssues]);
 
   const handleSymptomChange = (index: number, val: string) => {
     const updated = [...symptoms];
@@ -116,7 +149,7 @@ function CaseFormContent() {
         type: "success",
         text: editId
           ? `Case revised successfully. Created Version ${originalVersion ? originalVersion + 1 : 2}!`
-          : "Patient case logged successfully! Lookup items are queued for approval.",
+          : "Patient case logged successfully!",
       });
 
       if (!editId) {
@@ -196,7 +229,9 @@ function CaseFormContent() {
                   }}
                   onClick={() => removeSymptomBlock(idx)}
                 >
-                  ✕
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" style={{ width: "16px", height: "16px" }}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M6 18 18 6M6 6l12 12" />
+                  </svg>
                 </button>
               )}
             </div>
@@ -205,10 +240,13 @@ function CaseFormContent() {
           <button
             type="button"
             className="btn btn-secondary"
-            style={{ fontSize: "0.85rem", padding: "0.4rem 0.8rem", display: "inline-flex", gap: "0.3rem" }}
+            style={{ fontSize: "0.85rem", padding: "0.4rem 0.8rem", display: "inline-flex", gap: "0.3rem", alignItems: "center" }}
             onClick={addSymptomBlock}
           >
-            ➕ Add Another Symptom
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" style={{ width: "16px", height: "16px" }}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+            </svg>
+            Add Another Symptom
           </button>
         </div>
 
@@ -220,6 +258,52 @@ function CaseFormContent() {
           isMulti
           placeholder="Type health conditions (e.g. diabetes, thyroid, BP) and press Enter"
         />
+
+        {/* Real-time Recommendations Suggestion Box */}
+        {recommendations.length > 0 && (
+          <div style={{
+            backgroundColor: "rgba(2, 132, 199, 0.04)",
+            border: "1px solid rgba(2, 132, 199, 0.12)",
+            borderRadius: "var(--radius-md)",
+            padding: "1.25rem",
+            marginBottom: "1.5rem"
+          }}>
+            <h4 style={{ fontSize: "0.9rem", color: "var(--primary)", fontWeight: "600", marginBottom: "0.75rem", display: "flex", alignItems: "center", gap: "0.4rem" }}>
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" style={{ width: "18px", height: "18px", color: "var(--primary)" }}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M9.813 15.904 9 21l8.982-2.13 1.9-4.82L9.813 15.904Z" />
+                <path strokeLinecap="round" strokeLinejoin="round" d="M19.071 3.386a.25.25 0 0 0-.417 0l-3.86 5.143a.25.25 0 0 0 .193.393h7.734a.25.25 0 0 0 .193-.393l-3.86-5.143Z" />
+              </svg>
+              Recommended Tablets (Based on similar cases):
+            </h4>
+            <div style={{ display: "flex", gap: "0.75rem", flexWrap: "wrap" }}>
+              {recommendations.map((rec) => (
+                <button
+                  key={rec.tablet}
+                  type="button"
+                  className="btn btn-secondary"
+                  style={{
+                    padding: "0.4rem 0.8rem",
+                    fontSize: "0.85rem",
+                    borderRadius: "var(--radius-sm)",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "0.5rem",
+                    backgroundColor: "#ffffff",
+                    border: "1px solid var(--border)",
+                    marginTop: 0,
+                    cursor: "pointer"
+                  }}
+                  onClick={() => setSuggestedTablet(rec.tablet)}
+                >
+                  <span style={{ fontWeight: 600, color: "var(--text-primary)" }}>{rec.tablet}</span>
+                  <span className="badge badge-active" style={{ fontSize: "0.7rem", padding: "0.1rem 0.35rem" }}>
+                    {rec.confidence}% match
+                  </span>
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* Treatment Plan Section */}
         <h3 style={{ fontSize: "1.2rem", color: "var(--accent)", marginTop: "2rem", marginBottom: "1.25rem", borderBottom: "1px solid var(--border)", paddingBottom: "0.5rem" }}>

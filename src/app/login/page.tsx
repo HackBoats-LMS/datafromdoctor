@@ -66,14 +66,28 @@ export default function LoginPage() {
           fontSize: "0.85rem",
           color: "var(--text-secondary)"
         }}>
-          <strong style={{ color: "var(--primary)", display: "block", marginBottom: "0.25rem" }}>ℹ️ Login Credentials:</strong>
+          <strong style={{ color: "var(--primary)", display: "flex", alignItems: "center", gap: "0.25rem", marginBottom: "0.25rem" }}>
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" style={{ width: "16px", height: "16px", color: "var(--primary)" }}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="m11.25 11.25.041-.02a.75.75 0 1 1 1.085 1.085l-.041.02a.75.75 0 0 1-1.085-1.085ZM12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18ZM12.25 8.5a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Z" />
+            </svg>
+            Login Credentials:
+          </strong>
           Email: <code style={{ color: "var(--text-primary)" }}>doctor@gmail.com</code><br />
           Password: <code style={{ color: "var(--text-primary)" }}>doctor123</code>
         </div>
 
         {message && (
-          <div className={`toast toast-${message.type}`} style={{ padding: "0.75rem 1rem", fontSize: "0.9rem" }}>
-            <span>{message.type === "success" ? "✓" : "⚠️"}</span> {message.text}
+          <div className={`toast toast-${message.type}`} style={{ padding: "0.75rem 1rem", fontSize: "0.9rem", display: "flex", alignItems: "center", gap: "0.35rem" }}>
+            {message.type === "success" ? (
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" style={{ width: "16px", height: "16px" }}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="m4.5 12.75 6 6 9-13.5" />
+              </svg>
+            ) : (
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" style={{ width: "16px", height: "16px" }}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m9-.75a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 3.75h.008v.008H12v-.008Z" />
+              </svg>
+            )}
+            {message.text}
           </div>
         )}
 
