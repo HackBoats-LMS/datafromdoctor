@@ -20,6 +20,7 @@ function CaseFormContent() {
   const [foodIntake, setFoodIntake] = useState("after food");
   const [allergies, setAllergies] = useState<string[]>([]);
   const [currentMedications, setCurrentMedications] = useState<string[]>([]);
+  const [othersCauses, setOthersCauses] = useState<string[]>([""]);
   const [suggestedTablet, setSuggestedTablet] = useState("");
   const [dosageNotes, setDosageNotes] = useState("");
   const [recommendations, setRecommendations] = useState<Recommendation[]>([]);
@@ -46,6 +47,7 @@ function CaseFormContent() {
             setFoodIntake(targetCase.foodIntake || "after food");
             setAllergies(targetCase.allergies || []);
             setCurrentMedications(targetCase.currentMedications || []);
+            setOthersCauses(Array.isArray(targetCase.othersCauses) ? targetCase.othersCauses : [targetCase.othersCauses || ""]);
             setSuggestedTablet(targetCase.suggestedTablet || "");
             setDosageNotes(targetCase.dosageNotes || "");
             setOriginalVersion(targetCase.version || 1);
@@ -107,6 +109,22 @@ function CaseFormContent() {
     }
   };
 
+  const handleOthersCausesChange = (index: number, val: string) => {
+    const updated = [...othersCauses];
+    updated[index] = val;
+    setOthersCauses(updated);
+  };
+
+  const addOthersCausesBlock = () => {
+    setOthersCauses([...othersCauses, ""]);
+  };
+
+  const removeOthersCausesBlock = (index: number) => {
+    if (othersCauses.length > 1) {
+      setOthersCauses(othersCauses.filter((_, idx) => idx !== index));
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setMessage(null);
@@ -120,6 +138,8 @@ function CaseFormContent() {
       return;
     }
 
+    const filteredOthersCauses = othersCauses.map((c) => c.trim()).filter((c) => c !== "");
+
     const payload = {
       symptom: filteredSymptoms,
       healthIssues,
@@ -128,6 +148,7 @@ function CaseFormContent() {
       currentMedications,
       suggestedTablet,
       dosageNotes,
+      othersCauses: filteredOthersCauses,
     };
 
     try {
@@ -158,6 +179,7 @@ function CaseFormContent() {
         setFoodIntake("after food");
         setAllergies([]);
         setCurrentMedications([]);
+        setOthersCauses([""]);
         setSuggestedTablet("");
         setDosageNotes("");
       } else {
@@ -258,6 +280,57 @@ function CaseFormContent() {
           isMulti
           placeholder="Type health conditions (e.g. diabetes, thyroid, BP) and press Enter"
         />
+
+        <div style={{ marginBottom: "1.5rem" }}>
+          <label className="form-label" style={{ marginBottom: "0.5rem", display: "block" }}>
+            Others Causes
+          </label>
+          
+          {othersCauses.map((causeValue, idx) => (
+            <div key={idx} style={{ display: "flex", gap: "0.75rem", alignItems: "center", marginBottom: "0.75rem" }}>
+              <div style={{ flex: 1 }}>
+                <input
+                  type="text"
+                  className="form-control"
+                  value={causeValue}
+                  onChange={(e) => handleOthersCausesChange(idx, e.target.value)}
+                  placeholder={`Other Cause #${idx + 1} (e.g. stress, lack of sleep)...`}
+                />
+              </div>
+              {othersCauses.length > 1 && (
+                <button
+                  type="button"
+                  className="btn btn-secondary"
+                  style={{
+                    padding: "0 1rem",
+                    height: "45px",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    marginTop: 0
+                  }}
+                  onClick={() => removeOthersCausesBlock(idx)}
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" style={{ width: "16px", height: "16px" }}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M6 18 18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              )}
+            </div>
+          ))}
+
+          <button
+            type="button"
+            className="btn btn-secondary"
+            style={{ fontSize: "0.85rem", padding: "0.4rem 0.8rem", display: "inline-flex", gap: "0.3rem", alignItems: "center" }}
+            onClick={addOthersCausesBlock}
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" style={{ width: "16px", height: "16px" }}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+            </svg>
+            Add Other Cause
+          </button>
+        </div>
 
         {/* Real-time Recommendations Suggestion Box */}
         {recommendations.length > 0 && (

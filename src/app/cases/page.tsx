@@ -10,6 +10,7 @@ interface CaseRecord {
   healthIssues: string[];
   allergies: string[];
   currentMedications: string[];
+  othersCauses?: string[];
   suggestedTablet: string;
   dosageNotes?: string;
   doctorId: {
@@ -119,7 +120,7 @@ export default function CasesPage() {
           </a>
           <a
             href="/api/cases/export-csv"
-            download
+            download="clinical_cases.csv"
             className="btn btn-secondary"
             style={{ height: "40px", display: "inline-flex", alignItems: "center", padding: "0 0.75rem", fontSize: "0.85rem", marginTop: 0 }}
           >
@@ -290,6 +291,19 @@ export default function CasesPage() {
                       )}
                     </div>
                   </div>
+
+                  {item.othersCauses && item.othersCauses.length > 0 && (
+                    <div className="case-section" style={{ marginBottom: "0.75rem" }}>
+                      <span className="case-section-title">Others Causes</span>
+                      <div style={{ display: "flex", flexWrap: "wrap", gap: "0.35rem", marginTop: "0.25rem" }}>
+                        {item.othersCauses.map((cause) => (
+                          <span key={cause} style={{ fontSize: "0.8rem", background: "rgba(0, 0, 0, 0.04)", border: "1px solid var(--border)", padding: "0.15rem 0.4rem", borderRadius: "4px" }}>
+                            {cause}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                 </div>
 
                 <div className="case-treatment-plan">

@@ -26,6 +26,7 @@ export async function GET() {
       "Version",
       "Symptoms",
       "Health Issues",
+      "Others Causes",
       "Suggested Tablet",
       "Dosage Instructions",
       "Created At",
@@ -37,13 +38,15 @@ export async function GET() {
     const rows = cases.map((c: any) => {
       const symptoms = Array.isArray(c.symptom) ? c.symptom.join("; ") : c.symptom || "";
       const healthIssues = Array.isArray(c.healthIssues) ? c.healthIssues.join("; ") : "";
+      const othersCauses = Array.isArray(c.othersCauses) ? c.othersCauses.join("; ") : c.othersCauses || "";
       
       return [
-        c._id.toString(),
-        c.status,
-        c.version.toString(),
+        c._id?.toString() || "",
+        c.status || "active",
+        c.version?.toString() || "1",
         symptoms,
         healthIssues,
+        othersCauses,
         c.suggestedTablet || "",
         c.dosageNotes || "",
         c.createdAt ? new Date(c.createdAt).toISOString() : "",
@@ -51,7 +54,7 @@ export async function GET() {
         c.doctorId?.email || ""
       ].map(val => {
         // Escape double quotes and wrap in quotes to preserve formatting
-        const escaped = val.replace(/"/g, '""');
+        const escaped = (val || "").toString().replace(/"/g, '""');
         return `"${escaped}"`;
       });
     });
