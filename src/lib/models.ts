@@ -29,6 +29,7 @@ export interface ICase extends Document {
   suggestedTablet: string;
   dosageNotes?: string;
   othersCauses?: string[];
+  age?: string;
   doctorId: mongoose.Types.ObjectId;
   status: "active" | "revised" | "archived";
   version: number;
@@ -47,6 +48,7 @@ const CaseSchema = new Schema<ICase>(
     suggestedTablet: { type: String, required: true, trim: true },
     dosageNotes: { type: String, trim: true },
     othersCauses: [{ type: String, trim: true }],
+    age: { type: String, enum: ["less than 5 years", "5-13 years", "13+ years"] },
     doctorId: { type: Schema.Types.ObjectId, ref: "Doctor", required: true },
     status: { type: String, enum: ["active", "revised", "archived"], default: "active" },
     version: { type: Number, default: 1 },
@@ -58,7 +60,10 @@ const CaseSchema = new Schema<ICase>(
 // Indexes on Case
 CaseSchema.index({ doctorId: 1, createdAt: -1 });
 
-export const Case: Model<ICase> = mongoose.models.Case || mongoose.model<ICase>("Case", CaseSchema);
+if (mongoose.models.Case) {
+  delete mongoose.models.Case;
+}
+export const Case: Model<ICase> = mongoose.model<ICase>("Case", CaseSchema);
 
 // Lookup Schema template
 export interface ILookup extends Document {

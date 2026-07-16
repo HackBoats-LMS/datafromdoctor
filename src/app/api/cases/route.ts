@@ -23,6 +23,7 @@ export async function POST(req: Request) {
       suggestedTablet,
       dosageNotes,
       othersCauses,
+      age,
     } = body;
 
     if (!symptom || (Array.isArray(symptom) && symptom.length === 0) || !suggestedTablet) {
@@ -41,6 +42,7 @@ export async function POST(req: Request) {
       suggestedTablet,
       dosageNotes: dosageNotes || "",
       othersCauses: Array.isArray(othersCauses) ? othersCauses : (othersCauses ? [othersCauses] : []),
+      age,
       doctorId,
       status: "active",
       version: 1,
