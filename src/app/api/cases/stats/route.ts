@@ -32,7 +32,14 @@ export async function GET() {
       }
 
       // Tablets
-      if (c.suggestedTablet) {
+      if (c.prescriptions && c.prescriptions.length > 0) {
+        c.prescriptions.forEach((p: any) => {
+          if (p.tablet) {
+            const val = p.tablet.trim();
+            if (val) tabletCounts[val] = (tabletCounts[val] || 0) + 1;
+          }
+        });
+      } else if (c.suggestedTablet) {
         const val = c.suggestedTablet.trim();
         if (val) tabletCounts[val] = (tabletCounts[val] || 0) + 1;
       }

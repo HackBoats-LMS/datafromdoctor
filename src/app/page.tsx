@@ -22,8 +22,7 @@ function CaseFormContent() {
   const [currentMedications, setCurrentMedications] = useState<string[]>([]);
   const [othersCauses, setOthersCauses] = useState<string[]>([""]);
   const [age, setAge] = useState<string>("");
-  const [suggestedTablet, setSuggestedTablet] = useState("");
-  const [dosageNotes, setDosageNotes] = useState("");
+  const [prescriptions, setPrescriptions] = useState([{ tablet: "", dosage: "" }]);
   const [consultDoctor, setConsultDoctor] = useState(false);
   const [suggestions, setSuggestions] = useState<string[]>([""]);
   const [recommendations, setRecommendations] = useState<Recommendation[]>([]);
@@ -52,8 +51,15 @@ function CaseFormContent() {
             setCurrentMedications(targetCase.currentMedications || []);
             setOthersCauses(Array.isArray(targetCase.othersCauses) ? targetCase.othersCauses : [targetCase.othersCauses || ""]);
             setAge(targetCase.age || "");
-            setSuggestedTablet(targetCase.suggestedTablet || "");
-            setDosageNotes(targetCase.dosageNotes || "");
+            
+            if (targetCase.prescriptions && targetCase.prescriptions.length > 0) {
+              setPrescriptions(targetCase.prescriptions);
+            } else if (targetCase.suggestedTablet) {
+              setPrescriptions([{ tablet: targetCase.suggestedTablet, dosage: targetCase.dosageNotes || "" }]);
+            } else {
+              setPrescriptions([{ tablet: "", dosage: "" }]);
+            }
+            
             setConsultDoctor(targetCase.consultDoctor || false);
             setSuggestions(targetCase.suggestions?.length ? targetCase.suggestions : [""]);
             setOriginalVersion(targetCase.version || 1);
@@ -147,6 +153,31 @@ function CaseFormContent() {
     }
   };
 
+  const handlePrescriptionChange = (index: number, field: "tablet" | "dosage", val: string) => {
+    const updated = [...prescriptions];
+    updated[index] = { ...updated[index], [field]: val };
+    setPrescriptions(updated);
+  };
+
+  const addPrescriptionBlock = () => {
+    setPrescriptions([...prescriptions, { tablet: "", dosage: "" }]);
+  };
+
+  const removePrescriptionBlock = (index: number) => {
+    if (prescriptions.length > 1) {
+      setPrescriptions(prescriptions.filter((_, idx) => idx !== index));
+    }
+  };
+
+  const handleRecommendationClick = (recTablet: string) => {
+    const lastIdx = prescriptions.length - 1;
+    if (prescriptions[lastIdx].tablet.trim() === "") {
+      handlePrescriptionChange(lastIdx, "tablet", recTablet);
+    } else {
+      setPrescriptions([...prescriptions, { tablet: recTablet, dosage: "" }]);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setMessage(null);
@@ -169,8 +200,7 @@ function CaseFormContent() {
       foodIntake,
       allergies,
       currentMedications,
-      suggestedTablet,
-      dosageNotes,
+      prescriptions,
       consultDoctor,
       suggestions: filteredSuggestions,
       othersCauses: filteredOthersCauses,
@@ -207,8 +237,7 @@ function CaseFormContent() {
         setCurrentMedications([]);
         setOthersCauses([""]);
         setAge("");
-        setSuggestedTablet("");
-        setDosageNotes("");
+        setPrescriptions([{ tablet: "", dosage: "" }]);
         setConsultDoctor(false);
         setSuggestions([""]);
       } else {
@@ -375,6 +404,7 @@ function CaseFormContent() {
             <option value="less than 5 years">less than 5 years</option>
             <option value="5-13 years">5-13 years</option>
             <option value="13+ years">13+ years</option>
+            <option value="5+ years">5+ years</option>
           </select>
         </div>
 
@@ -412,7 +442,7 @@ function CaseFormContent() {
                     marginTop: 0,
                     cursor: "pointer"
                   }}
-                  onClick={() => setSuggestedTablet(rec.tablet)}
+                  onClick={() => handleRecommendationClick(rec.tablet)}
                 >
                   <span style={{ fontWeight: 600, color: "var(--text-primary)" }}>{rec.tablet}</span>
                   <span className="badge badge-active" style={{ fontSize: "0.7rem", padding: "0.1rem 0.35rem" }}>
@@ -429,26 +459,56 @@ function CaseFormContent() {
           2. Treatment Plan
         </h3>
 
-        <Autocomplete
-          field="tablet"
-          label="Suggested Tablet Name"
-          value={suggestedTablet}
-          onChange={setSuggestedTablet}
-          required
-          placeholder="Search registered tablets (e.g. Paracetamol 500mg, Metformin)..."
-        />
+        {prescriptions.map((presc, idx) => (
+          <div key={idx} style={{ marginBottom: "1.5rem", padding: "1rem", border: "1px solid var(--border)", borderRadius: "var(--radius-md)", backgroundColor: "#fafafa" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1rem" }}>
+              <h4 style={{ margin: 0, fontSize: "1rem", color: "var(--text-secondary)" }}>Prescription #{idx + 1}</h4>
+              {prescriptions.length > 1 && (
+                <button
+                  type="button"
+                  className="btn btn-secondary"
+                  style={{ padding: "0.25rem 0.5rem", fontSize: "0.8rem", height: "auto", margin: 0 }}
+                  onClick={() => removePrescriptionBlock(idx)}
+                >
+                  Remove
+                </button>
+              )}
+            </div>
+            
+            <Autocomplete
+              field="tablet"
+              label="Suggested Tablet Name"
+              value={presc.tablet}
+              onChange={(val) => handlePrescriptionChange(idx, "tablet", val)}
+              required={idx === 0}
+              placeholder="Search registered tablets (e.g. Paracetamol 500mg, Metformin)..."
+            />
 
-        <div className="form-group">
-          <label className="form-label">Dosage Instructions / Take Routine</label>
-          <textarea
-            value={dosageNotes}
-            onChange={(e) => setDosageNotes(e.target.value)}
-            className="form-control"
-            placeholder="e.g. Once daily, twice daily after dinner, etc."
-            rows={3}
-            style={{ resize: "vertical" }}
-          />
-        </div>
+            <div className="form-group" style={{ marginTop: "1rem" }}>
+              <label className="form-label">Dosage Instructions / Take Routine</label>
+              <textarea
+                value={presc.dosage}
+                onChange={(e) => handlePrescriptionChange(idx, "dosage", e.target.value)}
+                className="form-control"
+                placeholder="e.g. Once daily, twice daily after dinner, etc."
+                rows={2}
+                style={{ resize: "vertical" }}
+              />
+            </div>
+          </div>
+        ))}
+
+        <button
+          type="button"
+          className="btn btn-secondary"
+          style={{ fontSize: "0.85rem", padding: "0.4rem 0.8rem", display: "inline-flex", gap: "0.3rem", alignItems: "center", marginBottom: "1rem" }}
+          onClick={addPrescriptionBlock}
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" style={{ width: "16px", height: "16px" }}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+          </svg>
+          Add Another Prescription
+        </button>
 
         <div className="form-group" style={{ marginTop: "1rem", display: "flex", alignItems: "center", gap: "0.5rem" }}>
           <input

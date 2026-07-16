@@ -40,6 +40,17 @@ export async function GET() {
       const healthIssues = Array.isArray(c.healthIssues) ? c.healthIssues.join("; ") : "";
       const othersCauses = Array.isArray(c.othersCauses) ? c.othersCauses.join("; ") : c.othersCauses || "";
       
+      let suggestedTablets = "";
+      let dosageNotes = "";
+
+      if (c.prescriptions && c.prescriptions.length > 0) {
+        suggestedTablets = c.prescriptions.map((p: any) => p.tablet).join("; ");
+        dosageNotes = c.prescriptions.map((p: any) => p.dosage || "N/A").join("; ");
+      } else {
+        suggestedTablets = c.suggestedTablet || "";
+        dosageNotes = c.dosageNotes || "";
+      }
+
       return [
         c._id?.toString() || "",
         c.status || "active",
@@ -47,8 +58,8 @@ export async function GET() {
         symptoms,
         healthIssues,
         othersCauses,
-        c.suggestedTablet || "",
-        c.dosageNotes || "",
+        suggestedTablets,
+        dosageNotes,
         c.createdAt ? new Date(c.createdAt).toISOString() : "",
         c.doctorId?.name || "Unknown",
         c.doctorId?.email || ""

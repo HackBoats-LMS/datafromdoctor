@@ -12,8 +12,9 @@ interface CaseRecord {
   currentMedications: string[];
   othersCauses?: string[];
   age?: string;
-  suggestedTablet: string;
+  suggestedTablet?: string;
   dosageNotes?: string;
+  prescriptions?: { tablet: string; dosage?: string }[];
   consultDoctor?: boolean;
   suggestions?: string[];
   doctorId: {
@@ -339,22 +340,45 @@ export default function CasesPage() {
                 </div>
 
                 <div className="case-treatment-plan">
-                  <div className="case-section" style={{ marginBottom: "0.75rem" }}>
-                    <span className="case-section-title">Suggested Tablet</span>
-                    <span className="case-section-value" style={{ fontSize: "1.1rem", fontWeight: "600", color: "var(--primary)", display: "flex", alignItems: "center", gap: "0.35rem" }}>
-                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" style={{ width: "18px", height: "18px", color: "var(--primary)" }}>
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
-                      </svg>
-                      {item.suggestedTablet}
-                    </span>
-                  </div>
-
-                  <div className="case-section">
-                    <span className="case-section-title">Dosage Instructions</span>
-                    <span className="case-section-value" style={{ fontStyle: item.dosageNotes ? "normal" : "italic" }}>
-                      {item.dosageNotes || "No dosage instructions provided"}
-                    </span>
-                  </div>
+                  {item.prescriptions && item.prescriptions.length > 0 ? (
+                    item.prescriptions.map((presc, idx) => (
+                      <div key={idx} style={{ marginBottom: "1rem", paddingBottom: idx !== item.prescriptions!.length - 1 ? "1rem" : 0, borderBottom: idx !== item.prescriptions!.length - 1 ? "1px solid var(--border)" : "none" }}>
+                        <div className="case-section" style={{ marginBottom: "0.5rem" }}>
+                          <span className="case-section-title">Suggested Tablet</span>
+                          <span className="case-section-value" style={{ fontSize: "1.1rem", fontWeight: "600", color: "var(--primary)", display: "flex", alignItems: "center", gap: "0.35rem" }}>
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" style={{ width: "18px", height: "18px", color: "var(--primary)" }}>
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+                            </svg>
+                            {presc.tablet}
+                          </span>
+                        </div>
+                        <div className="case-section">
+                          <span className="case-section-title">Dosage Instructions</span>
+                          <span className="case-section-value" style={{ fontStyle: presc.dosage ? "normal" : "italic" }}>
+                            {presc.dosage || "No dosage instructions provided"}
+                          </span>
+                        </div>
+                      </div>
+                    ))
+                  ) : (
+                    <>
+                      <div className="case-section" style={{ marginBottom: "0.75rem" }}>
+                        <span className="case-section-title">Suggested Tablet</span>
+                        <span className="case-section-value" style={{ fontSize: "1.1rem", fontWeight: "600", color: "var(--primary)", display: "flex", alignItems: "center", gap: "0.35rem" }}>
+                          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" style={{ width: "18px", height: "18px", color: "var(--primary)" }}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+                          </svg>
+                          {item.suggestedTablet || "Unknown"}
+                        </span>
+                      </div>
+                      <div className="case-section">
+                        <span className="case-section-title">Dosage Instructions</span>
+                        <span className="case-section-value" style={{ fontStyle: item.dosageNotes ? "normal" : "italic" }}>
+                          {item.dosageNotes || "No dosage instructions provided"}
+                        </span>
+                      </div>
+                    </>
+                  )}
 
                   {item.consultDoctor && (
                     <div className="case-section" style={{ marginTop: "0.75rem" }}>

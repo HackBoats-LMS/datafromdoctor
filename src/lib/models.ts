@@ -26,8 +26,9 @@ export interface ICase extends Document {
   foodIntake: string;
   allergies: string[];
   currentMedications: string[];
-  suggestedTablet: string;
+  suggestedTablet?: string;
   dosageNotes?: string;
+  prescriptions?: { tablet: string; dosage: string }[];
   consultDoctor?: boolean;
   suggestions?: string[];
   othersCauses?: string[];
@@ -47,12 +48,18 @@ const CaseSchema = new Schema<ICase>(
     foodIntake: { type: String, required: true, trim: true },
     allergies: { type: [String], required: true },
     currentMedications: { type: [String], required: true },
-    suggestedTablet: { type: String, required: true, trim: true },
+    suggestedTablet: { type: String, trim: true },
     dosageNotes: { type: String, trim: true },
+    prescriptions: [
+      {
+        tablet: { type: String, required: true, trim: true },
+        dosage: { type: String, trim: true }
+      }
+    ],
     consultDoctor: { type: Boolean, default: false },
     suggestions: [{ type: String, trim: true }],
     othersCauses: [{ type: String, trim: true }],
-    age: { type: String, enum: ["less than 5 years", "5-13 years", "13+ years"] },
+    age: { type: String, enum: ["less than 5 years", "5-13 years", "13+ years", "5+ years"] },
     doctorId: { type: Schema.Types.ObjectId, ref: "Doctor", required: true },
     status: { type: String, enum: ["active", "revised", "archived"], default: "active" },
     version: { type: Number, default: 1 },

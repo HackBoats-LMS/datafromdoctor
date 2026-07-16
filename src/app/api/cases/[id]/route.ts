@@ -22,14 +22,19 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
       currentMedications,
       suggestedTablet,
       dosageNotes,
+      prescriptions,
       othersCauses,
       age,
       consultDoctor,
       suggestions,
     } = body;
 
-    if (!symptom || (Array.isArray(symptom) && symptom.length === 0) || !suggestedTablet) {
-      return NextResponse.json({ error: "Missing required fields: symptom or suggestedTablet" }, { status: 400 });
+    const finalPrescriptions = Array.isArray(prescriptions) && prescriptions.length > 0
+      ? prescriptions.filter((p: any) => p.tablet && p.tablet.trim() !== "")
+      : (suggestedTablet ? [{ tablet: suggestedTablet, dosage: dosageNotes || "" }] : []);
+
+    if (!symptom || (Array.isArray(symptom) && symptom.length === 0) || finalPrescriptions.length === 0) {
+      return NextResponse.json({ error: "Missing required fields: symptom or prescriptions" }, { status: 400 });
     }
 
     // Find the current case
@@ -47,8 +52,7 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
       foodIntake: foodIntake || "normal",
       allergies: allergies || [],
       currentMedications: currentMedications || [],
-      suggestedTablet,
-      dosageNotes: dosageNotes || "",
+      prescriptions: finalPrescriptions,
       consultDoctor: !!consultDoctor,
       suggestions: Array.isArray(suggestions) ? suggestions : (suggestions ? [suggestions] : []),
       othersCauses: Array.isArray(othersCauses) ? othersCauses : (othersCauses ? [othersCauses] : []),
@@ -91,7 +95,13 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
     } else {
       await registerLookup(SymptomLookup, symptom);
     }
-    await registerLookup(TabletLookup, suggestedTablet);
+    
+    for (const p of finalPrescriptions) {
+      if (p.tablet) {
+        await registerLookup(TabletLookup, p.tablet);
+      }
+    }
+
     if (Array.isArray(healthIssues)) {
       for (const issue of healthIssues) {
         await registerLookup(HealthIssueLookup, issue);

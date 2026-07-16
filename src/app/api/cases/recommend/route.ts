@@ -51,10 +51,20 @@ export async function POST(req: Request) {
         });
       }
 
-      const tablet = c.suggestedTablet;
-      if (tablet) {
-        tabletScores[tablet] = (tabletScores[tablet] || 0) + score;
-        totalScore += score;
+      if (c.prescriptions && c.prescriptions.length > 0) {
+        c.prescriptions.forEach((p: any) => {
+          const tablet = p.tablet;
+          if (tablet) {
+            tabletScores[tablet] = (tabletScores[tablet] || 0) + score;
+            totalScore += score;
+          }
+        });
+      } else {
+        const tablet = c.suggestedTablet;
+        if (tablet) {
+          tabletScores[tablet] = (tabletScores[tablet] || 0) + score;
+          totalScore += score;
+        }
       }
     });
 
