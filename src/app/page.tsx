@@ -17,6 +17,7 @@ function CaseFormContent() {
   // Keep symptoms as an array of strings in separate blocks
   const [symptoms, setSymptoms] = useState<string[]>([""]);
   const [healthIssues, setHealthIssues] = useState<string[]>([]);
+  const [pendingHealthIssue, setPendingHealthIssue] = useState<string>("");
   const [foodIntake, setFoodIntake] = useState("after food");
   const [allergies, setAllergies] = useState<string[]>([]);
   const [currentMedications, setCurrentMedications] = useState<string[]>([]);
@@ -193,10 +194,16 @@ function CaseFormContent() {
 
     const filteredOthersCauses = othersCauses.map((c) => c.trim()).filter((c) => c !== "");
     const filteredSuggestions = suggestions.map((c) => c.trim()).filter((c) => c !== "");
+    
+    // Make sure we capture anything the user typed but didn't press enter on
+    const finalHealthIssues = [...healthIssues];
+    if (pendingHealthIssue.trim() && !finalHealthIssues.includes(pendingHealthIssue.trim())) {
+      finalHealthIssues.push(pendingHealthIssue.trim());
+    }
 
     const payload = {
       symptom: filteredSymptoms,
-      healthIssues,
+      healthIssues: finalHealthIssues,
       foodIntake,
       allergies,
       currentMedications,
@@ -335,6 +342,7 @@ function CaseFormContent() {
           label="Health Issues (Comorbidities)"
           value={healthIssues}
           onChange={setHealthIssues}
+          onInputChange={setPendingHealthIssue}
           isMulti
           placeholder="Type health conditions (e.g. diabetes, thyroid, BP) and press Enter"
         />
