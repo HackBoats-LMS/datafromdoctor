@@ -11,6 +11,7 @@ interface CaseRecord {
   allergies: string[];
   currentMedications: string[];
   othersCauses?: string[];
+  age?: string;
   suggestedTablet: string;
   dosageNotes?: string;
   doctorId: {
@@ -84,6 +85,24 @@ export default function CasesPage() {
   const handleStatusChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     setStatusFilter(e.target.value);
     setPage(1);
+  };
+
+  const handleDeleteCase = async (id: string) => {
+    if (!window.confirm("Are you sure you want to delete this case? This action cannot be undone.")) return;
+    
+    try {
+      const res = await fetch(`/api/cases/${id}`, {
+        method: "DELETE",
+      });
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.error || "Failed to delete case");
+      }
+      fetchCases();
+      fetchStats();
+    } catch (err: any) {
+      alert(err.message);
+    }
   };
 
   return (
@@ -304,6 +323,17 @@ export default function CasesPage() {
                       </div>
                     </div>
                   )}
+
+                  {item.age && (
+                    <div className="case-section" style={{ marginBottom: "0.75rem" }}>
+                      <span className="case-section-title">Patient Age Group</span>
+                      <div style={{ display: "flex", flexWrap: "wrap", gap: "0.35rem", marginTop: "0.25rem" }}>
+                        <span style={{ fontSize: "0.8rem", background: "rgba(0, 0, 0, 0.04)", border: "1px solid var(--border)", padding: "0.15rem 0.4rem", borderRadius: "4px" }}>
+                          {item.age}
+                        </span>
+                      </div>
+                    </div>
+                  )}
                 </div>
 
                 <div className="case-treatment-plan">
@@ -327,7 +357,13 @@ export default function CasesPage() {
               </div>
 
               {item.status === "active" && (
-                <div style={{ display: "flex", justifyContent: "flex-end", borderTop: "1px solid var(--border)", paddingTop: "0.75rem" }}>
+                <div style={{ display: "flex", justifyContent: "flex-end", borderTop: "1px solid var(--border)", paddingTop: "0.75rem", gap: "0.5rem" }}>
+                  <button onClick={() => handleDeleteCase(item._id)} className="btn btn-secondary" style={{ padding: "0.4rem 1rem", fontSize: "0.85rem", display: "inline-flex", alignItems: "center", gap: "0.35rem", color: "red" }}>
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" style={{ width: "14px", height: "14px" }}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" />
+                    </svg>
+                    Delete
+                  </button>
                   <Link href={`/?edit=${item._id}`} className="btn btn-secondary" style={{ padding: "0.4rem 1rem", fontSize: "0.85rem", display: "inline-flex", alignItems: "center", gap: "0.35rem" }}>
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" style={{ width: "14px", height: "14px" }}>
                       <path strokeLinecap="round" strokeLinejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L6.83 20.013a4.5 4.5 0 0 1-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 0 1 1.13-1.897L16.863 4.487Zm0 0L19.5 7.125" />

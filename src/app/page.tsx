@@ -21,6 +21,7 @@ function CaseFormContent() {
   const [allergies, setAllergies] = useState<string[]>([]);
   const [currentMedications, setCurrentMedications] = useState<string[]>([]);
   const [othersCauses, setOthersCauses] = useState<string[]>([""]);
+  const [age, setAge] = useState<string>("");
   const [suggestedTablet, setSuggestedTablet] = useState("");
   const [dosageNotes, setDosageNotes] = useState("");
   const [recommendations, setRecommendations] = useState<Recommendation[]>([]);
@@ -48,6 +49,7 @@ function CaseFormContent() {
             setAllergies(targetCase.allergies || []);
             setCurrentMedications(targetCase.currentMedications || []);
             setOthersCauses(Array.isArray(targetCase.othersCauses) ? targetCase.othersCauses : [targetCase.othersCauses || ""]);
+            setAge(targetCase.age || "");
             setSuggestedTablet(targetCase.suggestedTablet || "");
             setDosageNotes(targetCase.dosageNotes || "");
             setOriginalVersion(targetCase.version || 1);
@@ -149,6 +151,7 @@ function CaseFormContent() {
       suggestedTablet,
       dosageNotes,
       othersCauses: filteredOthersCauses,
+      age,
     };
 
     try {
@@ -180,6 +183,7 @@ function CaseFormContent() {
         setAllergies([]);
         setCurrentMedications([]);
         setOthersCauses([""]);
+        setAge("");
         setSuggestedTablet("");
         setDosageNotes("");
       } else {
@@ -330,6 +334,23 @@ function CaseFormContent() {
             </svg>
             Add Other Cause
           </button>
+        </div>
+
+        <div style={{ marginBottom: "1.5rem" }}>
+          <label className="form-label" style={{ marginBottom: "0.5rem", display: "block" }}>
+            Patient Age Range
+          </label>
+          <select
+            className="form-control"
+            value={age}
+            onChange={(e) => setAge(e.target.value)}
+            style={{ width: "100%", padding: "0.75rem", borderRadius: "var(--radius-md)", border: "1px solid var(--border)", backgroundColor: "#fff" }}
+          >
+            <option value="">Select Age Group...</option>
+            <option value="less than 5 years">less than 5 years</option>
+            <option value="5-13 years">5-13 years</option>
+            <option value="13+ years">13+ years</option>
+          </select>
         </div>
 
         {/* Real-time Recommendations Suggestion Box */}

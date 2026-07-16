@@ -23,6 +23,7 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
       suggestedTablet,
       dosageNotes,
       othersCauses,
+      age,
     } = body;
 
     if (!symptom || (Array.isArray(symptom) && symptom.length === 0) || !suggestedTablet) {
@@ -47,6 +48,7 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
       suggestedTablet,
       dosageNotes: dosageNotes || "",
       othersCauses: Array.isArray(othersCauses) ? othersCauses : (othersCauses ? [othersCauses] : []),
+      age,
       doctorId,
       status: "active",
       version: oldCase.version + 1,
@@ -101,4 +103,34 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
 
 function escapeRegex(string: string) {
   return string.replace(/[-\/\\^$*+?.()|[\]{}]/g, "\\$&");
+}
+
+export async function DELETE(req: Request, { params }: { params: { id: string } }) {
+  try {
+    const session = await getDoctorFromSession();
+    if (!session) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    await connectToDatabase();
+    const caseId = params.id;
+
+    // We can either fully delete or just mark as archived
+    const existingCase = await Case.findById(caseId);
+    if (!existingCase) {
+      return NextResponse.json({ error: "Case not found" }, { status: 404 });
+    }
+
+    // Checking if the user deleting it is the owner
+    if (existingCase.doctorId.toString() !== session.doctorId) {
+      return NextResponse.json({ error: "Forbidden: You can only delete your own cases" }, { status: 403 });
+    }
+
+    await Case.findByIdAndDelete(caseId);
+
+    return NextResponse.json({ message: "Case deleted successfully" });
+  } catch (error: any) {
+    console.error("Delete case error:", error);
+    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
+  }
 }
