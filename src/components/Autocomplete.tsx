@@ -11,6 +11,7 @@ interface AutocompleteProps {
   required?: boolean;
   placeholder?: string;
   noMargin?: boolean;
+  onInputChange?: (val: string) => void;
 }
 
 export default function Autocomplete({
@@ -22,6 +23,7 @@ export default function Autocomplete({
   required = false,
   placeholder = "",
   noMargin = false,
+  onInputChange,
 }: AutocompleteProps) {
   const [inputValue, setInputValue] = useState("");
   const [suggestions, setSuggestions] = useState<string[]>([]);
@@ -76,6 +78,10 @@ export default function Autocomplete({
     setIsOpen(true);
     setActiveIndex(-1);
 
+    if (onInputChange) {
+      onInputChange(val);
+    }
+
     if (!isMulti) {
       onChange(val);
     }
@@ -96,6 +102,7 @@ export default function Autocomplete({
         onChange([...currentValues, suggestion]);
       }
       setInputValue("");
+      if (onInputChange) onInputChange("");
     } else {
       setInputValue(suggestion);
       onChange(suggestion);
@@ -115,6 +122,7 @@ export default function Autocomplete({
         onChange([...currentValues, trimmed]);
       }
       setInputValue("");
+      if (onInputChange) onInputChange("");
     } else {
       onChange(trimmed);
     }
