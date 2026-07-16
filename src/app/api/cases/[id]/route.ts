@@ -24,6 +24,8 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
       dosageNotes,
       othersCauses,
       age,
+      consultDoctor,
+      suggestions,
     } = body;
 
     if (!symptom || (Array.isArray(symptom) && symptom.length === 0) || !suggestedTablet) {
@@ -47,6 +49,8 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
       currentMedications: currentMedications || [],
       suggestedTablet,
       dosageNotes: dosageNotes || "",
+      consultDoctor: !!consultDoctor,
+      suggestions: Array.isArray(suggestions) ? suggestions : (suggestions ? [suggestions] : []),
       othersCauses: Array.isArray(othersCauses) ? othersCauses : (othersCauses ? [othersCauses] : []),
       age,
       doctorId,

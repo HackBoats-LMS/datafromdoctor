@@ -24,6 +24,8 @@ function CaseFormContent() {
   const [age, setAge] = useState<string>("");
   const [suggestedTablet, setSuggestedTablet] = useState("");
   const [dosageNotes, setDosageNotes] = useState("");
+  const [consultDoctor, setConsultDoctor] = useState(false);
+  const [suggestions, setSuggestions] = useState<string[]>([""]);
   const [recommendations, setRecommendations] = useState<Recommendation[]>([]);
 
   const [loading, setLoading] = useState(false);
@@ -52,6 +54,8 @@ function CaseFormContent() {
             setAge(targetCase.age || "");
             setSuggestedTablet(targetCase.suggestedTablet || "");
             setDosageNotes(targetCase.dosageNotes || "");
+            setConsultDoctor(targetCase.consultDoctor || false);
+            setSuggestions(targetCase.suggestions?.length ? targetCase.suggestions : [""]);
             setOriginalVersion(targetCase.version || 1);
           } else {
             setMessage({ type: "error", text: "Case not found for editing" });
@@ -127,6 +131,22 @@ function CaseFormContent() {
     }
   };
 
+  const handleSuggestionChange = (index: number, val: string) => {
+    const updated = [...suggestions];
+    updated[index] = val;
+    setSuggestions(updated);
+  };
+
+  const addSuggestionBlock = () => {
+    setSuggestions([...suggestions, ""]);
+  };
+
+  const removeSuggestionBlock = (index: number) => {
+    if (suggestions.length > 1) {
+      setSuggestions(suggestions.filter((_, idx) => idx !== index));
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setMessage(null);
@@ -141,6 +161,7 @@ function CaseFormContent() {
     }
 
     const filteredOthersCauses = othersCauses.map((c) => c.trim()).filter((c) => c !== "");
+    const filteredSuggestions = suggestions.map((c) => c.trim()).filter((c) => c !== "");
 
     const payload = {
       symptom: filteredSymptoms,
@@ -150,6 +171,8 @@ function CaseFormContent() {
       currentMedications,
       suggestedTablet,
       dosageNotes,
+      consultDoctor,
+      suggestions: filteredSuggestions,
       othersCauses: filteredOthersCauses,
       age,
     };
@@ -186,6 +209,8 @@ function CaseFormContent() {
         setAge("");
         setSuggestedTablet("");
         setDosageNotes("");
+        setConsultDoctor(false);
+        setSuggestions([""]);
       } else {
         setTimeout(() => {
           router.push("/cases");
@@ -423,6 +448,70 @@ function CaseFormContent() {
             rows={3}
             style={{ resize: "vertical" }}
           />
+        </div>
+
+        <div className="form-group" style={{ marginTop: "1rem", display: "flex", alignItems: "center", gap: "0.5rem" }}>
+          <input
+            type="checkbox"
+            id="consultDoctor"
+            checked={consultDoctor}
+            onChange={(e) => setConsultDoctor(e.target.checked)}
+            style={{ width: "18px", height: "18px", cursor: "pointer" }}
+          />
+          <label htmlFor="consultDoctor" style={{ margin: 0, cursor: "pointer", fontSize: "0.95rem" }}>
+            Consult Doctor
+          </label>
+        </div>
+
+        <div style={{ marginBottom: "1.5rem", marginTop: "1.5rem" }}>
+          <label className="form-label" style={{ marginBottom: "0.5rem", display: "block" }}>
+            Suggestions
+          </label>
+          
+          {suggestions.map((suggestionValue, idx) => (
+            <div key={idx} style={{ display: "flex", gap: "0.75rem", alignItems: "center", marginBottom: "0.75rem" }}>
+              <div style={{ flex: 1 }}>
+                <input
+                  type="text"
+                  className="form-control"
+                  value={suggestionValue}
+                  onChange={(e) => handleSuggestionChange(idx, e.target.value)}
+                  placeholder={`Suggestion #${idx + 1} (e.g. Drink more water, avoid cold food)...`}
+                />
+              </div>
+              {suggestions.length > 1 && (
+                <button
+                  type="button"
+                  className="btn btn-secondary"
+                  style={{
+                    padding: "0 1rem",
+                    height: "45px",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    marginTop: 0
+                  }}
+                  onClick={() => removeSuggestionBlock(idx)}
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" style={{ width: "16px", height: "16px" }}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M6 18 18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              )}
+            </div>
+          ))}
+
+          <button
+            type="button"
+            className="btn btn-secondary"
+            style={{ fontSize: "0.85rem", padding: "0.4rem 0.8rem", display: "inline-flex", gap: "0.3rem", alignItems: "center" }}
+            onClick={addSuggestionBlock}
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" style={{ width: "16px", height: "16px" }}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+            </svg>
+            Add More Suggestion
+          </button>
         </div>
 
         <div style={{ display: "flex", gap: "1rem", marginTop: "2.5rem" }}>

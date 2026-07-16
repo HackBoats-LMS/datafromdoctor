@@ -28,6 +28,8 @@ export interface ICase extends Document {
   currentMedications: string[];
   suggestedTablet: string;
   dosageNotes?: string;
+  consultDoctor?: boolean;
+  suggestions?: string[];
   othersCauses?: string[];
   age?: string;
   doctorId: mongoose.Types.ObjectId;
@@ -47,6 +49,8 @@ const CaseSchema = new Schema<ICase>(
     currentMedications: { type: [String], required: true },
     suggestedTablet: { type: String, required: true, trim: true },
     dosageNotes: { type: String, trim: true },
+    consultDoctor: { type: Boolean, default: false },
+    suggestions: [{ type: String, trim: true }],
     othersCauses: [{ type: String, trim: true }],
     age: { type: String, enum: ["less than 5 years", "5-13 years", "13+ years"] },
     doctorId: { type: Schema.Types.ObjectId, ref: "Doctor", required: true },
