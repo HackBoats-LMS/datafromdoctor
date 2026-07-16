@@ -24,6 +24,8 @@ export async function POST(req: Request) {
       dosageNotes,
       othersCauses,
       age,
+      consultDoctor,
+      suggestions,
     } = body;
 
     if (!symptom || (Array.isArray(symptom) && symptom.length === 0) || !suggestedTablet) {
@@ -41,6 +43,8 @@ export async function POST(req: Request) {
       currentMedications: currentMedications || [],
       suggestedTablet,
       dosageNotes: dosageNotes || "",
+      consultDoctor: !!consultDoctor,
+      suggestions: Array.isArray(suggestions) ? suggestions : (suggestions ? [suggestions] : []),
       othersCauses: Array.isArray(othersCauses) ? othersCauses : (othersCauses ? [othersCauses] : []),
       age,
       doctorId,

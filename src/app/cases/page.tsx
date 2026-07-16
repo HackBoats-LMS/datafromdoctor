@@ -14,6 +14,8 @@ interface CaseRecord {
   age?: string;
   suggestedTablet: string;
   dosageNotes?: string;
+  consultDoctor?: boolean;
+  suggestions?: string[];
   doctorId: {
     _id: string;
     name: string;
@@ -353,6 +355,28 @@ export default function CasesPage() {
                       {item.dosageNotes || "No dosage instructions provided"}
                     </span>
                   </div>
+
+                  {item.consultDoctor && (
+                    <div className="case-section" style={{ marginTop: "0.75rem" }}>
+                      <span className="case-section-value" style={{ display: "inline-flex", alignItems: "center", gap: "0.35rem", color: "var(--primary)", fontWeight: "600", fontSize: "0.85rem", background: "rgba(2, 132, 199, 0.1)", padding: "0.25rem 0.5rem", borderRadius: "4px" }}>
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" style={{ width: "16px", height: "16px" }}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                        </svg>
+                        Patient Advised to Consult Doctor
+                      </span>
+                    </div>
+                  )}
+
+                  {item.suggestions && item.suggestions.length > 0 && (
+                    <div className="case-section" style={{ marginTop: "0.75rem" }}>
+                      <span className="case-section-title">Additional Suggestions</span>
+                      <ul style={{ margin: "0.25rem 0 0 0", paddingLeft: "1.2rem", fontSize: "0.9rem", color: "var(--text-secondary)" }}>
+                        {item.suggestions.map((suggestion, idx) => (
+                          <li key={idx} style={{ marginBottom: "0.2rem" }}>{suggestion}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
                 </div>
               </div>
 
